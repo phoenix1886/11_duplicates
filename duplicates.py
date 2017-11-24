@@ -1,6 +1,6 @@
 import os
 from collections import Counter
-
+import argparse
 
 class File:
 
@@ -27,13 +27,21 @@ class File:
         return "File({}, {})".format(self.dir_path, self.name)
 
 
-def get_files_list(path):
+def arguments_parser():
+    parser = argparse.ArgumentParser(description="Anti-duplicator script")
+    parser.add_argument(
+        'path', help='directory path, where duplicates should be searched')
+    return parser
+
+
+def get_files(path):
     directory_tree = os.walk(path)
-    files_list = []
+    files = []
     for dir_path, folders, file_names in directory_tree:
-        files = [File(dir_path, file_name) for file_name in file_names]
-        files_list.extend(files)
-    return files_list
+        files_in_current_directory = [File(dir_path, file_name)
+                                      for file_name in file_names]
+        files.extend(files_in_current_directory)
+    return files
 
 
 def find_duplicates(files_list):
@@ -45,8 +53,11 @@ def find_duplicates(files_list):
 
 
 if __name__ == '__main__':
-    path = '/Users/KirillMaslov/Documents/Projects/devman'
-    files_counter = get_files_list(path)
-    duplicate_files = find_duplicates(files_counter)
+    args_parser = arguments_parser()
+    arguments = arguments_parser().parse_args()
+
+    directory_path = arguments.path
+    files = get_files(directory_path)
+    duplicate_files = find_duplicates(files)
     for file in duplicate_files:
         print(file)
