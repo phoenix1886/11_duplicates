@@ -4,27 +4,26 @@ import argparse
 
 class File:
 
-    def __init__(self, dir_path, name):
+    def __init__(self, dir_path, file_name):
         self.dir_path = dir_path
-        self.name = name
-        self.file_path = os.path.join(dir_path, name)
+        self.file_name = file_name
+        self.file_path = os.path.join(dir_path, file_name)
         self.size = os.path.getsize(self.file_path)
 
-        self._hash_value = hash((self.name, self.size))
+        self._hash_value = hash((self.file_name, self.size))
 
     def __eq__(self, other):
-        return self.name, self.size == other.name, other.size
+        return self.file_name, self.size == other.file_name, other.size
 
     def __hash__(self):
         return self._hash_value
 
     def __str__(self):
-        return "{name} ({size} bytes): at {path}".format(name=self.name,
-                                                         path=self.dir_path,
-                                                         size=self.size)
+        return "{file_name} ({size} bytes): at {path}".format(
+            file_name=self.file_name, path=self.dir_path, size=self.size)
 
     def __repr__(self):
-        return "File({}, {})".format(self.dir_path, self.name)
+        return "File({}, {})".format(self.dir_path, self.file_name)
 
 
 def arguments_parser():
@@ -48,7 +47,7 @@ def find_duplicates(files_list):
     files_counter = Counter(files_list)
     duplicates = [file for file in files_list
                   if files_counter[file] > 1]
-    duplicates.sort(key=lambda file: (file.name, file.size))
+    duplicates.sort(key=lambda file: (file.file_name, file.size))
     return duplicates
 
 
