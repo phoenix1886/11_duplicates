@@ -10,7 +10,7 @@ The script takes one positional argument:
 ## Example
 This example shows how to find all duplicates in 'UserName/problem3' directory
 ```
-$ python duplicates.py 'UserName/problem11'
+$ python duplicates.py 'UserName/problem3'
 
 ***duplicate files**
 ../../problem3/3_bars/three_bars_project/lib/python3.5/site-packages/pip/_vendor/packaging/_compat.py
