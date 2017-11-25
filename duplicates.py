@@ -1,46 +1,30 @@
 import os
-from collections import Counter
 import argparse
 import hashlib
+from collections import defaultdict
+import pprint
 
 
-class File:
+def calc_hash_sum_of_file(file_path):
+    with open(file_path, 'rb') as file:
+        hash_obj = hashlib.md5()
+        for chunk in chunk_reader(file):
+            hash_obj.update(chunk)
+        return hash_obj.hexdigest()
 
-    def __init__(self, dir_path, file_name):
-        self.dir_path = dir_path
-        self.file_name = file_name
-        self.file_path = os.path.join(dir_path, file_name)
-        self.size = os.path.getsize(self.file_path)
 
-        self.hash_sum = self._calc_hash_sum()
+def calc_hash_for_files(file_paths):
+        hash_sums = list(map(calc_hash_sum_of_file,
+                             file_paths))
+        return zip(hash_sums, file_paths)
 
-    def _calc_hash_sum(self):
-        with open(self.file_path, 'rb') as file:
-            hash_obj = hashlib.md5()
-            for chunk in self._chunk_reader(file):
-                hash_obj.update(chunk)
-            return hash_obj.hexdigest()
 
-    def _chunk_reader(self, file, chunk_size=1024):
-        while True:
-            chunk = file.read(chunk_size)
-            if not chunk:
-                return
-            yield chunk
-
-    def __eq__(self, other):
-        return self.file_name, self.size == other.file_name, other.size
-
-    def __hash__(self):
-        return int(self.hash_sum, 16)
-
-    def __str__(self):
-        return "{file_name} ({size} bytes): at {path}\n\t{hash}\n".format(
-            file_name=self.file_name, path=self.dir_path, size=self.size,
-            hash=self.hash_sum)
-
-    def __repr__(self):
-        return "File({}, {})".format(self.dir_path, self.file_name)
+def chunk_reader(file, chunk_size=1024):
+    while True:
+        chunk = file.read(chunk_size)
+        if not chunk:
+            return
+        yield chunk
 
 
 def arguments_parser():
@@ -50,30 +34,33 @@ def arguments_parser():
     return parser
 
 
-def get_files(path):
-    directory_tree = os.walk(path)
-    files = []
+def find_duplicates(directory_path):
+    hash_paths_dict = defaultdict(list)
+    directory_tree = os.walk(directory_path)
+
     for dir_path, folders, file_names in directory_tree:
-        files_in_current_directory = [File(dir_path, file_name)
-                                      for file_name in file_names]
-        files.extend(files_in_current_directory)
-    return files
+        current_directory_files_paths = list(map(os.path.join,
+                                                 [dir_path]*len(file_names),
+                                                 file_names))
+        hash_sum_values = calc_hash_for_files(current_directory_files_paths)
 
+        for hash_sum, file_path in hash_sum_values:
+            if os.path.getsize(file_path):
+                hash_paths_dict[hash_sum].append(file_path)
 
-def find_duplicates(files_list):
-    files_counter = Counter(files_list)
-    duplicates = [file for file in files_list
-                  if files_counter[file] > 1]
-    duplicates.sort(key=lambda file: (file.hash_sum, file.file_name))
-    return duplicates
+    duplicates_paths = [path_list for path_list in hash_paths_dict.values()
+                        if len(path_list) > 1]
+
+    return duplicates_paths
 
 
 if __name__ == '__main__':
     args_parser = arguments_parser()
-    arguments = arguments_parser().parse_args()
+    arguments = args_parser.parse_args()
 
     directory_path = arguments.path
-    files = get_files(directory_path)
-    duplicate_files = find_duplicates(files)
-    for file in duplicate_files:
-        print(file)
+    duplicates = find_duplicates(directory_path)
+    for file_list in duplicates:
+        print('\n***duplicate files**')
+        for file_path in file_list:
+            print(file_path)
