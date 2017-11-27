@@ -35,23 +35,23 @@ def arguments_parser():
 
 
 def find_duplicates(directory_path):
-    hash_paths_dict = defaultdict(list)
+    multiple_paths = defaultdict(list)
     directory_tree = os.walk(directory_path)
 
     for dir_path, folders, file_names in directory_tree:
-        current_directory_files_paths = list(map(os.path.join,
-                                                 [dir_path]*len(file_names),
-                                                 file_names))
-        hash_sum_values = calc_hash_for_files(current_directory_files_paths)
+        current_directory_files = list(map(os.path.join,
+                                           [dir_path]*len(file_names),
+                                           file_names))
+        hash_sums = calc_hash_for_files(current_directory_files)
 
-        for hash_sum, file_path in hash_sum_values:
+        for hash_sum, file_path in hash_sums:
             if os.path.getsize(file_path):
-                hash_paths_dict[hash_sum].append(file_path)
+                multiple_paths[hash_sum].append(file_path)
 
-    duplicates_paths = [path_list for path_list in hash_paths_dict.values()
-                        if len(path_list) > 1]
+    duplicates = [path_list for path_list in multiple_paths.values()
+                  if len(path_list) > 1]
 
-    return duplicates_paths
+    return duplicates
 
 
 if __name__ == '__main__':
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     directory_path = arguments.path
     duplicates = find_duplicates(directory_path)
-    for file_list in duplicates:
+    for files_list in duplicates:
         print('\n***duplicate files**')
-        for file_path in file_list:
+        for file_path in files_list:
             print(file_path)
