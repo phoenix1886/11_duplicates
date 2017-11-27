@@ -2,7 +2,6 @@ import os
 import argparse
 import hashlib
 from collections import defaultdict
-import pprint
 
 
 def calc_hash_sum_of_file(file_path):
