@@ -5,22 +5,22 @@ from collections import defaultdict
 
 
 def calc_hash_sum_of_file(file_path):
-    with open(file_path, 'rb') as file:
+    with open(file_path, 'rb') as file_to_hash:
         hash_obj = hashlib.md5()
-        for chunk in chunk_reader(file):
+        for chunk in chunk_reader(file_to_hash):
             hash_obj.update(chunk)
         return hash_obj.hexdigest()
 
 
 def calc_hash_for_files(file_paths):
-        hash_sums = list(map(calc_hash_sum_of_file,
-                             file_paths))
-        return zip(hash_sums, file_paths)
+    hash_sums = list(map(calc_hash_sum_of_file,
+                         file_paths))
+    return zip(hash_sums, file_paths)
 
 
-def chunk_reader(file, chunk_size=1024):
+def chunk_reader(file_to_read, chunk_size=1024):
     while True:
-        chunk = file.read(chunk_size)
+        chunk = file_to_read.read(chunk_size)
         if not chunk:
             return
         yield chunk
